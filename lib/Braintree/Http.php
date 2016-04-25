@@ -98,7 +98,15 @@ class Http
 
     private function _doRequest($httpVerb, $path, $requestBody = null)
     {
-        return $this->_doUrlRequest($httpVerb, $this->_config->baseUrl() . $path, $requestBody);
+        if (!$this->_config->getUseMockResponse()) {
+            $result = $this->_doUrlRequest($httpVerb, $this->_config->baseUrl() . $path, $requestBody);
+            if ($this->_config->getSaveMockResponse()) {
+                $this->saveMock($httpVerb, $this->_config->baseUrl() . $path, $requestBody, $result);
+            }
+        } else {
+            $result = $this->_doMockRequest($httpVerb, $this->_config->baseUrl() . $path, $requestBody);
+        }
+        return $result;
     }
 
     public function _doUrlRequest($httpVerb, $url, $requestBody = null)
@@ -183,6 +191,55 @@ class Http
         }
 
         return $memo;
+    }
+
+    /**
+     * Getting mock response.
+     *
+     * @param string   $httpVerb        HTTP request method
+     * @param string   $requestUrl      Full API endpoint URL
+     * @param mixed    $requestBody     Request body.
+     *
+     * @return array    Mock response.
+     */
+    private function _doMockRequest ($httpVerb, $requestUrl, $requestBody) {
+        if (!is_string($requestBody)) {
+            $requestBody = print_r($requestBody, true);
+        }
+        $filename = $this->_config->getMockResponsesDir() . md5($httpVerb) . md5($requestUrl) . md5($requestBody) . '.inc';
+        if (file_exists($filename)) {
+            $data = null;
+            require $filename;
+            return $data;
+        } else {
+            return ['status' => 404, 'body' => ''];
+        }
+    }
+
+    /**
+     * Saving mock response.
+     *
+     * @param string   $httpVerb        HTTP request method
+     * @param string   $requestUrl      Full API endpoint URL
+     * @param mixed    $requestBody     Request body.
+     * @param mixed    $response        Response body
+     */
+    private function saveMock ($httpVerb, $requestUrl, $requestBody, $response) {
+        if (!file_exists($this->_config->getMockResponsesDir())) {
+            mkdir($this->_config->getMockResponsesDir(), 0777, true);
+        }
+        if (!is_string($requestBody)) {
+            $requestBody = print_r($requestBody, true);
+        }
+        $response     = htmlspecialchars($response['body'], ENT_QUOTES);
+        $data         = "<?\n\$data = array('status' => $response[status], \n'body' => '$response');";
+        $filename     = $this->_config->getMockResponsesDir() . md5($httpVerb) . md5($requestUrl) . md5($requestBody) . '.inc';
+        file_put_contents($filename, $data);
+        if ($this->_config->getEnvironment() == 'sandbox') {
+            $requestData = "<?\n\$reqdata = array('url' => '$requestUrl', \n'body' => '$requestBody');";
+            $filename    = $this->_config->getMockResponsesDir() . md5($requestUrl) . md5($requestBody) . '_req.inc';
+            file_put_contents($filename, $requestData);
+        }
     }
 }
 class_alias('Braintree\Http', 'Braintree_Http');

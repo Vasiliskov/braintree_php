@@ -25,6 +25,10 @@ class Configuration
     private $_proxyPort = null;
     private $_proxyType = null;
     private $_timeout = 60;
+    // Enable mock
+    private $_mockResponsesDir = null;
+    private $_useMockResponse = false;
+    private $_saveMockResponse = false;
 
     /**
      * Braintree API version to use
@@ -47,6 +51,15 @@ class Configuration
             }
             if ($kind == 'privateKey') {
                 $this->_privateKey = $value;
+            }
+            if ($kind == 'mockResponsesDir') {
+                $this->_mockResponsesDir = $value;
+            }
+            if ($kind == 'useMockResponse') {
+                $this->_useMockResponse = $value;
+            }
+            if ($kind == 'saveMockResponse') {
+                $this->_saveMockResponse = $value;
             }
         }
 
@@ -109,6 +122,30 @@ class Configuration
             return self::$global->getPrivateKey();
         }
         self::$global->setPrivateKey($value);
+    }
+
+    public static function mockResponsesDir($value=null)
+    {
+        if (empty($value)) {
+            return self::$global->getMockResponsesDir();
+        }
+        self::$global->setMockResponsesDir($value);
+    }
+
+    public static function useMockResponse($value=null)
+    {
+        if (empty($value)) {
+            return self::$global->getUseMockResponse();
+        }
+        self::$global->setUseMockResponse($value);
+    }
+
+    public static function saveMockResponse($value=null)
+    {
+        if (empty($value)) {
+            return self::$global->getSaveMockResponse();
+        }
+        self::$global->setSaveMockResponse($value);
     }
 
     /**
@@ -495,6 +532,41 @@ class Configuration
     {
         error_log('[Braintree] ' . $message);
     }
+
+    /**
+     * Methods to support saving mock responses.
+     */
+    public function getMockResponsesDir()
+    {
+        return $this->_mockResponsesDir;
+    }
+
+    public function setMockResponsesDir($value)
+    {
+        $this->_mockResponsesDir = $value;
+    }
+
+    public function getUseMockResponse()
+    {
+        return $this->_useMockResponse;
+    }
+
+    public function setUseMockResponse($value)
+    {
+        $this->_useMockResponse = $value;
+    }
+
+    public function getSaveMockResponse()
+    {
+        return $this->_saveMockResponse;
+    }
+
+    public function setSaveMockResponse($value)
+    {
+        $this->_saveMockResponse = $value;
+    }
+
+
 }
 Configuration::reset();
 class_alias('Braintree\Configuration', 'Braintree_Configuration');
