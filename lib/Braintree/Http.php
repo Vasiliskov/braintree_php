@@ -98,7 +98,7 @@ class Http
 
     private function _doRequest($httpVerb, $path, $requestBody = null)
     {
-        if (!$this->_config->getUseMockResponse()) {
+        if (!$this->_config->getUseMockResponse() || $this->_config->getSaveMockResponse()) {
             $result = $this->_doUrlRequest($httpVerb, $this->_config->baseUrl() . $path, $requestBody);
             if ($this->_config->getSaveMockResponse()) {
                 $this->saveMock($httpVerb, $this->_config->baseUrl() . $path, $requestBody, $result);
