@@ -210,6 +210,7 @@ class Http
         if (file_exists($filename)) {
             $data = null;
             require $filename;
+            $data['body'] = htmlspecialchars_decode($data['body'], ENT_QUOTES);
             return $data;
         } else {
             return ['status' => 404, 'body' => ''];
