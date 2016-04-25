@@ -231,8 +231,8 @@ class Http
         if (!is_string($requestBody)) {
             $requestBody = print_r($requestBody, true);
         }
-        $response     = htmlspecialchars($response['body'], ENT_QUOTES);
-        $data         = "<?\n\$data = array('status' => $response[status], \n'body' => '$response');";
+        $responseXml  = htmlspecialchars($response['body'], ENT_QUOTES);
+        $data         = "<?\n\$data = array('status' => $response[status], \n'body' => '$responseXml');";
         $filename     = $this->_config->getMockResponsesDir() . md5($httpVerb) . md5($requestUrl) . md5($requestBody) . '.inc';
         file_put_contents($filename, $data);
         if ($this->_config->getEnvironment() == 'sandbox') {
